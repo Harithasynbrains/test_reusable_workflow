@@ -1,0 +1,32 @@
+name: Reusable CI Build
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: Node.js version
+        required: false
+        default: "20"
+        type: string
+    outputs:
+      build-status:
+        description: Result of the build job
+        value: ${{ jobs.verify.outputs.build_status }}
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    outputs:
+      build_status: ${{ steps.build_step.outcome }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+      - run: npm ci
+      - id: build_step
+        run: npm run build
